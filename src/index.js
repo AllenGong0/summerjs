@@ -21,7 +21,10 @@ class Summer {
   constructor(httpServer) {
     this._httpServer = httpServer;
   }
-  //暂时移除callback
+/**
+ *  创建一个httpServer 实例
+ * @param {Obejct} keygen 
+ */
   start(keygen) {
     //如果没有https证书就使用http协议启动服务
     try {
@@ -47,7 +50,7 @@ class Summer {
   }
   /**
    * 就支持显示监听的端口号
-   * @param {*} port 
+   * @param {Interger} port 
    */
   listen(port) {
     if (this._httpServer.listening) {

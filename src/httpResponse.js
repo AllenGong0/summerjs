@@ -55,33 +55,18 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-    socket(){
+    socket() {
         return this.connection;
     }
 
-    /**
-     * Return response header.
-     *
-     * @return {Object}
-     * @api public
-     */
-
-      header() {
-        const { res } = this;
-        return typeof this.getHeaders === 'function'
-            ? res.getHeaders()
-            : res._headers || {}; // Node < 7.7
-    }
-
-
-    /**
+    /*
      * Get response status code.
      *
      * @return {Number}
      * @api public
      */
 
-      status() {
+    status() {
         return this.statusCode;
     }
 
@@ -92,7 +77,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      status(code) {
+    status(code) {
         if (this.headerSent) return;
 
         assert(Number.isInteger(code), 'status code must be a number');
@@ -110,8 +95,8 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      message() {
-        return this.res.statusMessage || statuses[this.status];
+    message() {
+        return this.statusMessage || statuses[this.status];
     }
 
     /**
@@ -121,8 +106,8 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      message(msg) {
-        this.res.statusMessage = msg;
+    message(msg) {
+        this.statusMessage = msg;
     }
 
     /**
@@ -132,7 +117,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      body() {
+    body() {
         return this._body;
     }
 
@@ -143,8 +128,8 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      body(val) {
-        const original = this._body;
+    body(val) {
+      //  const original = this._body;
         this._body = val;
 
         // no content
@@ -169,24 +154,24 @@ class httpResponse extends http.ServerResponse {
             return;
         }
 
-        // // buffer
-        // if (Buffer.isBuffer(val)) {
-        //     if (setType) this.type = 'bin';
-        //     this.length = val.length;
-        //     return;
-        // }
+        // buffer
+        if (Buffer.isBuffer(val)) {
+            if (setType) this.type = 'bin';
+            this.length = val.length;
+            return;
+        }
 
-        // // stream
-        // if ('function' == typeof val.pipe) {
-        //     onFinish(this.res, destroy.bind(null, val));
-        //     ensureErrorHandler(val, err => this.ctx.onerror(err));
+        // stream
+        if ('function' == typeof val.pipe) {
+            onFinish(this.res, destroy.bind(null, val));
+            ensureErrorHandler(val, err => this.ctx.onerror(err));
 
-        //     // overwriting
-        //     if (null != original && original != val) this.remove('Content-Length');
+            // overwriting
+            if (null != original && original != val) this.remove('Content-Length');
 
-        //     if (setType) this.type = 'bin';
-        //     return;
-        // }
+            if (setType) this.type = 'bin';
+            return;
+        }
 
         // json
         this.remove('Content-Length');
@@ -200,7 +185,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      length(n) {
+    length(n) {
         this.set('Content-Length', n);
     }
 
@@ -211,7 +196,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      length() {
+    length() {
         const len = this.header['content-length'];
         const body = this.body;
 
@@ -233,7 +218,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      headerSent() {
+    headerSent() {
         return this.headersSent;
     }
 
@@ -318,7 +303,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      type(type) {
+    type(type) {
         type = getType(type);
         if (type) {
             this.set('Content-Type', type);
@@ -337,7 +322,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      lastModified(val) {
+    lastModified(val) {
         if ('string' == typeof val) val = new Date(val);
         this.set('Last-Modified', val.toUTCString());
     }
@@ -349,7 +334,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      lastModified() {
+    lastModified() {
         const date = this.get('last-modified');
         if (date) return new Date(date);
     }
@@ -366,7 +351,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      etag(val) {
+    etag(val) {
         if (!/^(W\/)?"/.test(val)) val = `"${val}"`;
         this.set('ETag', val);
     }
@@ -378,7 +363,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      etag() {
+    etag() {
         return this.get('ETag');
     }
 
@@ -390,7 +375,7 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      type() {
+    type() {
         const type = this.get('Content-Type');
         if (!type) return '';
         return type.split(';', 1)[0];
@@ -498,8 +483,7 @@ class httpResponse extends http.ServerResponse {
 
     remove(field) {
         if (this.headerSent) return;
-
-        this.res.removeHeader(field);
+        this.removeHeader(field);
     }
 
     /**
@@ -511,10 +495,9 @@ class httpResponse extends http.ServerResponse {
      * @api private
      */
 
-      writable() {
+    writable() {
         // can't write any more after response finished
         if (this.res.finished) return false;
-
         const socket = this.res.socket;
         // There are already pending outgoing res, but still writable
         // https://github.com/nodejs/node/blob/v4.4.7/lib/_http_server.js#L486
@@ -543,19 +526,19 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-    toJSON() {
-        return only(this, [
-            'status',
-            'message',
-            'header'
-        ]);
-    }
+    // toJSON() {
+    //     return only(this, [
+    //         'status',
+    //         'message',
+    //         'header'
+    //     ]);
+    // }
 
     /**
      * Flush any set headers, and begin the body
      */
     flushHeaders() {
-        this.res.flushHeaders();
+        this.flushHeaders();
     }
 
     /**

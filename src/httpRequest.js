@@ -107,7 +107,7 @@ class httpRequest extends http.IncomingMessage {
      */
 
     origin() {
-        return `${this.protocol}://${this.host}`;
+        return `${this.protocol()}://${this.host()}`;
     }
 
     /**
@@ -261,10 +261,9 @@ class httpRequest extends http.IncomingMessage {
      */
     //TODO 需要修改
     host() {
-        const proxy = this.app.proxy;
-        let host = proxy && this.get('X-Forwarded-Host');
+        let host = this.headers().host;
         if (!host) {
-            if (this.req.httpVersionMajor >= 2) host = this.get(':authority');
+            if (this.httpVersionMajor >= 2) host = this.get(':authority');
             if (!host) host = this.get('Host');
         }
         if (!host) return '';
