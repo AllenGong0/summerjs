@@ -1,7 +1,8 @@
 const http = require('http');
 const fs = require('fs');
 const http2 = require('http2');
-
+const httpResponse = require('./httpResponse');
+const httpRequest = require('./httpRequest');
 // Create an unencrypted HTTP/2 server.
 // Since there are no browsers known that support
 // unencrypted HTTP/2, the use of `http2.createSecureServer()`
@@ -17,7 +18,7 @@ class Summer {
    *    cert: localhost-cert.pem
    *}
    */
-  constructor(httpServer) {
+  constructor() {
     this._httpServer = httpServer;
   }
   //暂时移除callback
@@ -25,7 +26,10 @@ class Summer {
     //如果没有https证书就使用http协议启动服务
     try {
       if (keygen == null) {
-      this._httpServer = http.createServer();
+        //在这里注入req,resp扩展
+        this._httpServer = http.createServer(
+          { httpRequest, httpResponse }
+        );
       } else {
         this._httpServer = http2.createSecureServer({
           key: fs.readFileSync(keygen.key),
@@ -34,18 +38,17 @@ class Summer {
         this._httpServer.on('error', (err) => {
           console.error(err);
         })
-    //    this._httpServer.on('stream', callback);
+        //    this._httpServer.on('stream', callback);
       }
-
       return this;
     } catch (err) {
       console.log(err);
     }
   }
-/**
- * 就支持显示监听的端口号
- * @param {*} port 
- */
+  /**
+   * 就支持显示监听的端口号
+   * @param {*} port 
+   */
   listen(port) {
     if (this._httpServer.listening) {
       console.log("已有监听端口");
@@ -60,6 +63,6 @@ class Summer {
 
 let app = new Summer().start().listen(9090);
 app.on('request', function (req, resp) {
-  console.log(req) 
+  console.log(req)
 })
 //console.log(http.response());
