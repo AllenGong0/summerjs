@@ -13,6 +13,39 @@ const extname = require('path').extname;
 const vary = require('vary');
 const only = require('only');
 const util = require('util');
+/**
+ *    statusCode: number;
+        statusMessage: string;
+        constructor(req: IncomingMessage);
+        assignSocket(socket: Socket): void;
+        detachSocket(socket: Socket): void;
+        // https://github.com/nodejs/node/blob/master/test/parallel/test-http-write-callbacks.js#L53
+        // no args in writeContinue callback
+        writeContinue(callback?: () => void): void;
+        writeHead(statusCode: number, reasonPhrase?: string, headers?: OutgoingHttpHeaders): this;
+        writeHead(statusCode: number, headers?: OutgoingHttpHeaders): this;
+
+        upgrading: boolean;
+        chunkedEncoding: boolean;
+        shouldKeepAlive: boolean;
+        useChunkedEncodingByDefault: boolean;
+        sendDate: boolean;
+        finished: boolean;
+        headersSent: boolean;
+        connection: Socket;
+
+        constructor();
+
+        setTimeout(msecs: number, callback?: () => void): this;
+        setHeader(name: string, value: number | string | string[]): void;
+        getHeader(name: string): number | string | string[] | undefined;
+        getHeaders(): OutgoingHttpHeaders;
+        getHeaderNames(): string[];
+        hasHeader(name: string): boolean;
+        removeHeader(name: string): void;
+        addTrailers(headers: OutgoingHttpHeaders | Array<[string, string]>): void;
+        flushHeaders(): void;
+ */
 class httpResponse extends http.ServerResponse {
 
     /**
@@ -22,8 +55,8 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-      socket() {
-        return this.res.socket;
+    socket(){
+        return this.connection;
     }
 
     /**
@@ -35,21 +68,11 @@ class httpResponse extends http.ServerResponse {
 
       header() {
         const { res } = this;
-        return typeof res.getHeaders === 'function'
+        return typeof this.getHeaders === 'function'
             ? res.getHeaders()
             : res._headers || {}; // Node < 7.7
     }
 
-    /**
-     * Return response header, alias as response.header
-     *
-     * @return {Object}
-     * @api public
-     */
-
-      headers() {
-        return this.header;
-    }
 
     /**
      * Get response status code.
@@ -59,7 +82,7 @@ class httpResponse extends http.ServerResponse {
      */
 
       status() {
-        return this.res.statusCode;
+        return this.statusCode;
     }
 
     /**
@@ -75,8 +98,8 @@ class httpResponse extends http.ServerResponse {
         assert(Number.isInteger(code), 'status code must be a number');
         assert(code >= 100 && code <= 999, `invalid status code: ${code}`);
         this._explicitStatus = true;
-        this.res.statusCode = code;
-        if (this.req.httpVersionMajor < 2) this.res.statusMessage = statuses[code];
+        this.statusCode = code;
+        if (this.httpVersionMajor < 2) this.statusMessage = statuses[code];
         if (this.body && statuses.empty[code]) this.body = null;
     }
 
@@ -146,24 +169,24 @@ class httpResponse extends http.ServerResponse {
             return;
         }
 
-        // buffer
-        if (Buffer.isBuffer(val)) {
-            if (setType) this.type = 'bin';
-            this.length = val.length;
-            return;
-        }
+        // // buffer
+        // if (Buffer.isBuffer(val)) {
+        //     if (setType) this.type = 'bin';
+        //     this.length = val.length;
+        //     return;
+        // }
 
-        // stream
-        if ('function' == typeof val.pipe) {
-            onFinish(this.res, destroy.bind(null, val));
-            ensureErrorHandler(val, err => this.ctx.onerror(err));
+        // // stream
+        // if ('function' == typeof val.pipe) {
+        //     onFinish(this.res, destroy.bind(null, val));
+        //     ensureErrorHandler(val, err => this.ctx.onerror(err));
 
-            // overwriting
-            if (null != original && original != val) this.remove('Content-Length');
+        //     // overwriting
+        //     if (null != original && original != val) this.remove('Content-Length');
 
-            if (setType) this.type = 'bin';
-            return;
-        }
+        //     if (setType) this.type = 'bin';
+        //     return;
+        // }
 
         // json
         this.remove('Content-Length');
@@ -211,7 +234,7 @@ class httpResponse extends http.ServerResponse {
      */
 
       headerSent() {
-        return this.res.headersSent;
+        return this.headersSent;
     }
 
     /**
@@ -506,12 +529,12 @@ class httpResponse extends http.ServerResponse {
      * @api public
      */
 
-    inspect() {
-        if (!this.res) return;
-        const o = this.toJSON();
-        o.body = this.body;
-        return o;
-    }
+    // inspect() {
+    //     if (!this.res) return;
+    //     const o = this.toJSON();
+    //     o.body = this.body;
+    //     return o;
+    // }
 
     /**
      * Return JSON representation.
@@ -545,6 +568,3 @@ class httpResponse extends http.ServerResponse {
 
 }
 module.exports = httpResponse;
-if (util.inspect.custom) {
-    module.exports[util.inspect.custom] = module.exports.inspect;
-}

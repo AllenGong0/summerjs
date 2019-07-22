@@ -7,11 +7,15 @@
 
 request和response封装借鉴了koa
 
+stream和大文件io读写建议使用oss+cdn
+
 ###  开始测试
 ```
 npm test
 ```
 ###  特性
+-  简化的req和resp（是否完成：<input type="checkbox" checked="checked">）
+
 -  原生无侵入的核心部分 （是否完成：<input type="checkbox">）
 
 -  利用修饰符完成router配置  （是否完成：<input type="checkbox">）

@@ -164,7 +164,7 @@ class httpRequest extends http.IncomingMessage {
      */
 
     path(path) {
-        const url = this.url();
+        const url = this.URL;
         if (url.pathname === path) return;
 
         url.pathname = path;
@@ -408,7 +408,7 @@ class httpRequest extends http.IncomingMessage {
      * @return {String}
      * @api public
      */
-
+    //TODO 这里需要处理一下
     protocol() {
         if (this.socket.encrypted) return 'https';
         if (!this.app.proxy) return 'http';
@@ -424,7 +424,7 @@ class httpRequest extends http.IncomingMessage {
      * @return {Boolean}
      * @api public
      */
-
+    //TODO:这里需要处理一下
     secure() {
         return 'https' == this.protocol;
     }
@@ -698,10 +698,10 @@ class httpRequest extends http.IncomingMessage {
      * @api public
      */
 
-    inspect() {
-        if (!this.req) return;
-        return this.toJSON();
-    }
+    // inspect() {
+    //     if (!this.req) return;
+    //     return this.toJSON();
+    // }
 
     /**
      * Return JSON representation.
@@ -725,8 +725,4 @@ class httpRequest extends http.IncomingMessage {
    * @api public
    */
 module.exports = httpRequest;
-/* istanbul ignore else */
-if (util.inspect.custom) {
-    module.exports[util.inspect.custom] = module.exports.inspect;
-}
 

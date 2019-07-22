@@ -18,7 +18,7 @@ class Summer {
    *    cert: localhost-cert.pem
    *}
    */
-  constructor() {
+  constructor(httpServer) {
     this._httpServer = httpServer;
   }
   //暂时移除callback
@@ -28,7 +28,7 @@ class Summer {
       if (keygen == null) {
         //在这里注入req,resp扩展
         this._httpServer = http.createServer(
-          { httpRequest, httpResponse }
+          { IncomingMessage: httpRequest, ServerResponse: httpResponse }
         );
       } else {
         this._httpServer = http2.createSecureServer({
