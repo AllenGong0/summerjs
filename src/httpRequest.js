@@ -729,4 +729,4 @@ module.exports = httpRequest;
 if (util.inspect.custom) {
     module.exports[util.inspect.custom] = module.exports.inspect;
 }
-}
+
