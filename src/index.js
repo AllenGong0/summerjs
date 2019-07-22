@@ -60,6 +60,6 @@ class Summer {
 
 let app = new Summer().start().listen(9090);
 app.on('request', function (req, resp) {
-  console.log(req.headers.host) 
+  console.log(req) 
 })
-console.log(http.response());
+//console.log(http.response());
